@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             // can't get location
             // GPS or Network is not enabled
             // Ask user to enable GPS/network in settings
-           
+
         }
     }
 
