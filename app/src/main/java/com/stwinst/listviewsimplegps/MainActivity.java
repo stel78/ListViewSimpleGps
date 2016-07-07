@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             double speed = location.getSpeed();
             double longitude = location.getLongitude();
             //yuuyiyiy
+            //llll
 
             // \n is for new line
             Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
