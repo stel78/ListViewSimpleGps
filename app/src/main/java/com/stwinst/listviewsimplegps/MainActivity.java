@@ -9,9 +9,18 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements LocationListener {
+
+
+    ListView listView ;
+
+    ArrayList gpsList;
 
     // flag for GPS status
     boolean isGPSEnabled = false;
@@ -42,8 +51,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
+        // Get ListView object from xml
+        listView = (ListView) findViewById(R.id.listView);
+        gpsList = new ArrayList();
 
         // check if GPS enabled
         if (ContextCompat.checkSelfPermission(this,
@@ -73,14 +83,31 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
 
         if(location!=null){
-            //hkhkyuiyiyui
-            //uyuiiuyi
 
-            double latitude = location.getLatitude();
+            double lat = location.getLatitude();
             double speed = location.getSpeed();
-            double longitude = location.getLongitude();
-            //yuuyiyiy
-            //llll
+            double log = location.getLongitude();
+            double alt = location.getAltitude();
+            double bearing = location.getBearing();
+            double accuracy = location.getAccuracy();
+            double time = location.getTime();
+
+            String[] values = new String[]{
+                    String.valueOf(lat),
+                    String.valueOf(log),
+                    String.valueOf(alt),
+                    String.valueOf(speed),
+                    String.valueOf(alt),
+                    String.valueOf(accuracy),
+                    String.valueOf(time)
+            };
+                    ArrayAdapter<String> itemsAdapter =
+                            new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, values);
+
+
+            // Assign adapter to ListView
+            listView.setAdapter(itemsAdapter);
+
 
             // \n is for new line
             Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
