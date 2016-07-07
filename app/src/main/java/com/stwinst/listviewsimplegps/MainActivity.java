@@ -73,8 +73,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
 
         if(location!=null){
+            //hkhkyuiyiyui
+            //uyuiiuyi
 
             double latitude = location.getLatitude();
+            double speed = location.getSpeed();
             double longitude = location.getLongitude();
 
             // \n is for new line
