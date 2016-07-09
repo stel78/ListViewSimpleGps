@@ -1,7 +1,9 @@
 package com.stwinst.listviewsimplegps;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,29 +22,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     ListView listView ;
 
-    ArrayList gpsList;
+    ArrayList<String> gpsList;
 
-    // flag for GPS status
-    boolean isGPSEnabled = false;
 
-    // flag for network status
-    boolean isNetworkEnabled = false;
-
-    // flag for GPS status
-    boolean canGetLocation = false;
 
     Location location; // location
-    double latitude; // latitude
-    double longitude; // longitude
+
+
+    private String provider;
 
     // The minimum distance to change Updates in meters
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 2; // 10 meters
 
     // The minimum time between updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 1000  * 1; // 1 second
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
+
+    //ArrayAdapter for ListView
+    ArrayAdapter<String> itemsAdapter;
 
 
 
@@ -53,7 +52,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         setContentView(R.layout.activity_main);
         // Get ListView object from xml
         listView = (ListView) findViewById(R.id.listView);
-        gpsList = new ArrayList();
+
+        //Initializing gpsList
+       gpsList = new ArrayList<>();
+
+       for(int i=0;i<7;i++){
+            gpsList.add("Null");
+        }
+        itemsAdapter =
+                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, gpsList);
+        // Assign adapter to ListView
+        listView.setAdapter(itemsAdapter);
 
         // check if GPS enabled
         if (ContextCompat.checkSelfPermission(this,
@@ -76,11 +85,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_READ_CONTACTS);
 
+
+
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
                 // app-defined int constant. The callback method gets the
                 // result of the request.
             }
         }
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        // Define the criteria how to select the locatioin provider -> use
+        // default
+        Criteria criteria = new Criteria();
+        provider = locationManager.getBestProvider(criteria, false);
+        location = locationManager.getLastKnownLocation(provider);
 
         if(location!=null){
 
@@ -92,25 +110,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             double accuracy = location.getAccuracy();
             double time = location.getTime();
 
-            String[] values = new String[]{
-                    String.valueOf(lat),
-                    String.valueOf(log),
-                    String.valueOf(alt),
-                    String.valueOf(speed),
-                    String.valueOf(alt),
-                    String.valueOf(accuracy),
-                    String.valueOf(time)
-            };
-                    ArrayAdapter<String> itemsAdapter =
-                            new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, values);
+             gpsList.clear();
+            //update gpsList
+            gpsList.add(   "Lat "+String.valueOf(lat));
+                    gpsList.add(    "Long "+String.valueOf(log));
+                            gpsList.add(   "Alt "+String.valueOf(alt));
+                                    gpsList.add(    "Speed "+String.valueOf(speed));
+                                            gpsList.add(    "Bearing "+String.valueOf(bearing));
+                                                    gpsList.add(    "Accuracy "+String.valueOf(accuracy));
+                                                            gpsList.add(     "Time "+String.valueOf(time));
+
+            //update adapter
+            itemsAdapter.notifyDataSetChanged();
 
 
-            // Assign adapter to ListView
-            listView.setAdapter(itemsAdapter);
 
 
-            // \n is for new line
-            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+
+
         }else{
             // can't get location
             // GPS or Network is not enabled
@@ -128,8 +145,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
+
+
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
 
@@ -153,7 +170,48 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     public void onLocationChanged(Location location) {
 
+            double lat = location.getLatitude();
+            double speed = location.getSpeed();
+            double log = location.getLongitude();
+            double alt = location.getAltitude();
+            double bearing = location.getBearing();
+            double accuracy = location.getAccuracy();
+            double time = location.getTime();
+
+            gpsList.clear();
+            //update gpsList
+            gpsList.add(   "Lat "+String.valueOf(lat));
+            gpsList.add(    "Long "+String.valueOf(log));
+            gpsList.add(   "Alt "+String.valueOf(alt));
+            gpsList.add(    "Speed "+String.valueOf(speed));
+            gpsList.add(    "Bearing "+String.valueOf(bearing));
+            gpsList.add(    "Accuracy "+String.valueOf(accuracy));
+            gpsList.add(     "Time "+String.valueOf(time));
+
+            //update adapter
+            itemsAdapter.notifyDataSetChanged();
+
+
+
+
+
     }
+
+    /* Request updates at startup */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+
+    }
+
+    /* Remove the locationlistener updates when Activity is paused */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        locationManager.removeUpdates(this);
+    }
+
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
