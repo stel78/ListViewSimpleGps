@@ -7,6 +7,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -20,10 +21,9 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
 
-    ListView listView ;
+    ListView listView;
 
     ArrayList<String> gpsList;
-
 
 
     Location location; // location
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 2; // 10 meters
 
     // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000  * 1; // 1 second
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 1; // 1 second
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     ArrayAdapter<String> itemsAdapter;
 
 
-
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         listView = (ListView) findViewById(R.id.listView);
 
         //Initializing gpsList
-       gpsList = new ArrayList<>();
+        gpsList = new ArrayList<>();
 
-       for(int i=0;i<7;i++){
+        for (int i = 0; i < 7; i++) {
             gpsList.add("Null");
         }
         itemsAdapter =
@@ -64,7 +64,62 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // Assign adapter to ListView
         listView.setAdapter(itemsAdapter);
 
+
+
         // check if GPS enabled
+        if (Build.VERSION.SDK_INT >= 23) {
+            checkPermissions();
+        }else{
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            // Define the criteria how to select the locatioin provider -> use
+            // default
+            Criteria criteria = new Criteria();
+            provider = locationManager.getBestProvider(criteria, false);
+            location = locationManager.getLastKnownLocation(provider);
+
+            if(location!=null){
+
+                double lat = location.getLatitude();
+                double speed = location.getSpeed();
+                double log = location.getLongitude();
+                double alt = location.getAltitude();
+                double bearing = location.getBearing();
+                double accuracy = location.getAccuracy();
+                double time = location.getTime();
+
+                gpsList.clear();
+                //update gpsList
+                gpsList.add(   "Lat "+String.valueOf(lat));
+                gpsList.add(    "Long "+String.valueOf(log));
+                gpsList.add(   "Alt "+String.valueOf(alt));
+                gpsList.add(    "Speed "+String.valueOf(speed));
+                gpsList.add(    "Bearing "+String.valueOf(bearing));
+                gpsList.add(    "Accuracy "+String.valueOf(accuracy));
+                gpsList.add(     "Time "+String.valueOf(time));
+
+                //update adapter
+                itemsAdapter.notifyDataSetChanged();
+
+
+
+
+
+
+            }else{
+                // can't get location
+                // GPS or Network is not enabled
+                // Ask user to enable GPS/network in settings
+
+            }
+        }
+
+
+
+
+
+    }
+
+    private void checkPermissions() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -92,48 +147,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 // result of the request.
             }
         }
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        // Define the criteria how to select the locatioin provider -> use
-        // default
-        Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
-        location = locationManager.getLastKnownLocation(provider);
-
-        if(location!=null){
-
-            double lat = location.getLatitude();
-            double speed = location.getSpeed();
-            double log = location.getLongitude();
-            double alt = location.getAltitude();
-            double bearing = location.getBearing();
-            double accuracy = location.getAccuracy();
-            double time = location.getTime();
-
-             gpsList.clear();
-            //update gpsList
-            gpsList.add(   "Lat "+String.valueOf(lat));
-                    gpsList.add(    "Long "+String.valueOf(log));
-                            gpsList.add(   "Alt "+String.valueOf(alt));
-                                    gpsList.add(    "Speed "+String.valueOf(speed));
-                                            gpsList.add(    "Bearing "+String.valueOf(bearing));
-                                                    gpsList.add(    "Accuracy "+String.valueOf(accuracy));
-                                                            gpsList.add(     "Time "+String.valueOf(time));
-
-            //update adapter
-            itemsAdapter.notifyDataSetChanged();
-
-
-
-
-
-
-        }else{
-            // can't get location
-            // GPS or Network is not enabled
-            // Ask user to enable GPS/network in settings
-
-        }
     }
 
     @Override
@@ -146,27 +159,51 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
 
+                    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    // Define the criteria how to select the locatioin provider -> use
+                    // default
+                    Criteria criteria = new Criteria();
+                    provider = locationManager.getBestProvider(criteria, false);
 
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
 
-                    // \n is for new line
-                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
-                }
+                    location = locationManager.getLastKnownLocation(provider);
 
-                 else {
+
+
+                        double lat = location.getLatitude();
+                        double speed = location.getSpeed();
+                        double log = location.getLongitude();
+                        double alt = location.getAltitude();
+                        double bearing = location.getBearing();
+                        double accuracy = location.getAccuracy();
+                        double time = location.getTime();
+
+                        gpsList.clear();
+                        //update gpsList
+                        gpsList.add("Lat " + String.valueOf(lat));
+                        gpsList.add("Long " + String.valueOf(log));
+                        gpsList.add("Alt " + String.valueOf(alt));
+                        gpsList.add("Speed " + String.valueOf(speed));
+                        gpsList.add("Bearing " + String.valueOf(bearing));
+                        gpsList.add("Accuracy " + String.valueOf(accuracy));
+                        gpsList.add("Time " + String.valueOf(time));
+
+                        //update adapter
+                        itemsAdapter.notifyDataSetChanged();
+
+
+                } else {
 
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
                 return;
-            }
 
-            // other 'case' lines to check for other
-            // permissions this app might request
+                // other 'case' lines to check for other
+                // permissions this app might request
+            }
         }
     }
-
     @Override
     public void onLocationChanged(Location location) {
 
@@ -201,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     protected void onResume() {
         super.onResume();
-        locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+      locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
 
     }
 
@@ -209,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     protected void onPause() {
         super.onPause();
-        locationManager.removeUpdates(this);
+      locationManager.removeUpdates(this);
     }
 
 
